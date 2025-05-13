@@ -60,8 +60,8 @@ const ProductGrid = ({ products, showAddToCart, cartId }: ProductGridProps) => {
 
 
   const rows: Product[][] = [];
-  for (let i = 0; i < mockProducts.length; i += 2) {
-    rows.push(mockProducts.slice(i, i + 2));
+  for (let i = 0; i < products.length; i += 2) {
+    rows.push(products.slice(i, i + 2));
   }
 
   return (

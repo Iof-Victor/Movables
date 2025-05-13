@@ -10,7 +10,8 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store'; // Updated import
 import axios from 'axios';
 import { useRouter } from 'expo-router';
-
+import { api } from '@/utils/api';
+import { useRegion } from '@/context/RegionContext'; // Import useRegion
 import ProductGrid from '../components/Grids/ProductGrid';
 import Button from '@/components/Button';
 
@@ -18,6 +19,7 @@ const HomePageScreen = () => {
   const router = useRouter();
   const [data, setData] = useState<any>();
   const [products, setProducts] = useState<any>();
+  const { region } = useRegion(); // Use the region from context
   
 
   const getData = async () => {
@@ -32,23 +34,29 @@ const HomePageScreen = () => {
 
   const fetchRandomProducts = async () => {
     try {
-      const res = await axios.get('/getRandomProducts');
-      if (res?.data) setProducts(res.data);
-    } catch (error: any) {
-      if (error.response) {
-        console.log('Response error:', error.response);
-      } else if (error.request) {
-        console.log('Request error:', error.request);
-      } else {
-        console.log('General error:', error.message);
+      if (!region) {
+        console.error('Region is not set. Cannot fetch products.');
+        return;
       }
+
+      const res = await api('/api/getRandomProducts', region);
+      console.log('response is', res);
+      setProducts(res);
+    } catch (error: any) {
+      console.error('Error fetching random products:', error.message);
     }
   };
 
+  // useEffect(() => {
+  //   getData();
+  // }, []);
+
   useEffect(() => {
-    getData();
-    fetchRandomProducts();
-  }, []);
+    if (region) {
+      fetchRandomProducts();
+    }
+  }, [region]); 
+  console.log('products are', products);
 
   const navigateToProducts = (productType: string) => {
     router.push(`/home/${productType}`);
