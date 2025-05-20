@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons'; 
 import axios from 'axios';
+import { api } from '@/utils/api';
+import { useRegion } from '@/context/RegionContext'; // Import useRegion
 
 interface QuantityButtonProps {
   quantity: number;
@@ -12,10 +14,11 @@ interface QuantityButtonProps {
 
 const QuantityButton = ({ quantity, cartId, productId, onChangeQuantity }: QuantityButtonProps) => {
   const [quantityButton, setQuantityButton] = useState(quantity);
+  const { region } = useRegion(); 
 
   const addToCart = async () => {
     try {
-      await axios.post('/addToCart', { productId, cartId });
+      await api('api/addToCart', region || "EU", { method:"POST",body: JSON.stringify({productId, cartId })});
     } catch (error) {
       console.log('Cannot add to cart', error);
     }
@@ -23,12 +26,19 @@ const QuantityButton = ({ quantity, cartId, productId, onChangeQuantity }: Quant
 
   const deleteFromCart = async () => {
     try {
-      await axios.post('/deleteProductFromCart', { productId, cartId });
-    } catch (error) {
-      console.log('Cannot remove from cart', error);
+      console.log('Calling deleteFromCart with:', { region, productId, cartId });
+  
+      await api('/deleteProductFromCart', region || "EU", {
+        method: "POST",
+        body: JSON.stringify({ productId, cartId }),
+      });
+  
+      console.log('Product successfully removed from cart');
+    } catch (error: any) {
+      console.error('Cannot remove from cart:', error.message);
     }
   };
-
+  
   useEffect(() => {
     setQuantityButton(quantity);
   }, [quantity]);

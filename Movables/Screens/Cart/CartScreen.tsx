@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useFocusEffect, router } from 'expo-router';
-import * as SecureStore from 'expo-secure-store'; // Updated import
-import axios from 'axios';
+import * as SecureStore from 'expo-secure-store';
 import CartGrid from '../../components/Grids/CartGrid';
+import { api } from '@/utils/api'; 
+import { useRegion } from '@/context/RegionContext';
 
 const CartScreen = () => {
   const [cartId, setCartId] = useState<string | undefined>();
   const [products, setProducts] = useState<any[]>([]);
   const [total, setTotal] = useState('');
   const [changedQuantity, setChangedQuantity] = useState(false);
+  const { region } = useRegion();
 
   const onChangeQuantity = (q: number) => {
     if (q < 1 && cartId) {
@@ -20,13 +22,19 @@ const CartScreen = () => {
 
   const fetchProducts = async (cartId: string) => {
     try {
-      const res = await axios.post('/showProductsInCart', { cartId });
-      if (res.data) {
-        const productArray = res.data.map((item: any) => {
+      const res = await api('/api/showProductsInCart', region, {
+        method: 'POST',
+        body: JSON.stringify({ cartId }),
+      });
+
+      if (Array.isArray(res)) {
+        const productArray = res.map((item: any) => {
           const product = { ...item.__product__, quantity: item.quantity };
           return product;
         });
         setProducts(productArray);
+      } else {
+        console.log('Unexpected response format:', res);
       }
     } catch (error: any) {
       console.log('Error fetching products:', error.message);
@@ -35,9 +43,13 @@ const CartScreen = () => {
 
   const fetchTotalSum = async (cartId: string) => {
     try {
-      const res = await axios.post('/calculateCartTotalSum', { cartId });
-      if (res.data) {
-        setTotal(res.data);
+      const res = await api('/api/calculateCartTotalSum', region, {
+        method: 'POST',
+        body: JSON.stringify({ cartId }),
+      });
+
+      if (res) {
+        setTotal(String(res));
       }
     } catch (error: any) {
       console.log('Error fetching total:', error.message);
@@ -46,7 +58,7 @@ const CartScreen = () => {
 
   const getData = async () => {
     try {
-      const jsonValue = await SecureStore.getItem('@storage_Key');
+      const jsonValue = await SecureStore.getItemAsync('storage_Key');
       const data = JSON.parse(jsonValue || '{}');
       if (data?.cartId) {
         setCartId(data.cartId);

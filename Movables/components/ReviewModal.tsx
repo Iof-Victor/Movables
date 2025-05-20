@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { View, TextInput, Text, StyleSheet, Modal, Alert } from 'react-native';
 import Button from './Button';
-import axios from 'axios';
+import { api } from '@/utils/api'; 
+import { useRegion } from '@/context/RegionContext';
 
 interface ReviewModalProps {
   visible: boolean;
@@ -14,30 +15,37 @@ interface ReviewModalProps {
 const ReviewModal = ({ visible, onClose, productId, userId, userName }: ReviewModalProps) => {
   const [rating, setRating] = useState<number>(0);
   const [message, setMessage] = useState<string>('');
+  const { region } = useRegion();
 
   const giveReview = async () => {
-    if (productId.length !== 0 && userId.length !== 0) {
-      try {
-        const res = await axios.post('/giveReview', {
+    if (!productId || !userId || !rating || !message.trim()) {
+      Alert.alert('Error', 'Please fill all the fields.');
+      return;
+    }
+  
+    try {
+      const res = await api('/api/giveReview', region, {
+        method: 'POST',
+        body: JSON.stringify({
           productId,
           userId,
           firstName: userName,
           rating,
           comment: message,
-        });
-
-        if (res?.data) {
-          Alert.alert('Success', 'Review submitted successfully.');
-        }
-      } catch (error) {
-        console.error('Error submitting review:', error);
-        Alert.alert('Error', 'Something went wrong while submitting the review.');
+        }),
+      });
+  
+      if (res) {
+        Alert.alert('Success', 'Review submitted successfully.');
+      } else {
+        console.log('Unexpected response format for giveReview:', res);
+        Alert.alert('Error', 'Failed to submit the review.');
       }
-    } else {
-      Alert.alert('Error', 'Please fill all the fields.');
+    } catch (error: any) {
+      console.error('Error submitting review:', error.message);
+      Alert.alert('Error', 'Something went wrong while submitting the review.');
     }
   };
-
   const handleReviewSubmit = () => {
     giveReview();
     onClose();

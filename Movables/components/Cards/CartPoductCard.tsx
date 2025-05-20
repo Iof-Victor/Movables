@@ -1,7 +1,6 @@
 import React from 'react';
 import { Text, View, StyleSheet, Image } from 'react-native';
-// import QuantityButton from './QuantityButton';
-
+import QuantityButton from '../QuantityButton';
 interface CartProductCardProps {
   productName: string;
   price: number;
@@ -33,12 +32,12 @@ const CartProductCard = ({
         <View style={styles.priceContainer}>
           <Text style={styles.price}>{price}$</Text>
         </View>
-        {/* <QuantityButton
+        <QuantityButton
           quantity={quantity}
           cartId={cartId}
           productId={productId}
           onChangeQuantity={onChangeQuantity}
-        /> */}
+        />
       </View>
     </View>
   );

@@ -10,28 +10,36 @@ import {
   Alert,
 } from 'react-native';
 import axios from 'axios';
-import * as SecureStore from 'expo-secure-store'; // Updated import
+import * as SecureStore from 'expo-secure-store'; 
 import { useLocalSearchParams } from 'expo-router';
+import { api } from '@/utils/api'; 
+import { useRegion } from '@/context/RegionContext';
 
-// import Button from '../../../components/Button';
-// import ReviewModal from '../../../components/ReviewModal';
+import Button from '../../../components/Button';
+import ReviewModal from '../../../components/ReviewModal';
+import AiModal from '@/components/AiModal';
 
 const ProductDetails = () => {
-  const { category, productId, productName, image, productColor } = useLocalSearchParams<{
+  const { category, productId, productName, image, productColor,product } = useLocalSearchParams<{
     category: string;
     productId: string;
     productName: string;
     image: string;
     productColor: string;
+    product: any; // Adjust the type as per your product structure
   }>();
+
+  console.log('111 product',product);
 
   const [reviews, setReviews] = useState<any[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [reviewModal, setReviewModal] = useState(false);
+  const [AiModalVisible, setAiModalVisible] = useState(false);
   const [userId, setUserId] = useState('');
   const [reviewEligible, setReviewEligible] = useState<any>();
   const [firstName, setFirstName] = useState('');
   const [cartId, setCartId] = useState('');
+  const { region } = useRegion();
 
   const avgRating =
     reviews.length > 0
@@ -40,6 +48,7 @@ const ProductDetails = () => {
 
   const toggleModal = () => setModalVisible(!modalVisible);
   const toggleModalReview = () => setReviewModal(!reviewModal);
+  const toggleAiModal = () => setAiModalVisible(!AiModalVisible);
 
   const handleGiveReview = () => {
     if (reviewEligible?.code === 3) {
@@ -49,18 +58,9 @@ const ProductDetails = () => {
     }
   };
 
-  const addToCart = async () => {
-    try {
-      await axios.post('/addToCart', { productId, cartId });
-      Alert.alert('Added to cart!');
-    } catch (err) {
-      console.log('Error adding to cart:', err);
-    }
-  };
-
   const getData = async () => {
     try {
-      const jsonValue = await SecureStore.getItem('@storage_Key');
+      const jsonValue = await SecureStore.getItem('storage_Key');
       const data = JSON.parse(jsonValue || '{}');
       if (data?.id) {
         setUserId(data.id);
@@ -73,25 +73,58 @@ const ProductDetails = () => {
     }
   };
 
+  const addToCart = async () => {
+    try {
+      const res = await api('/api/addToCart', region, {
+        method: 'POST',
+        body: JSON.stringify({ productId, cartId }),
+      });
+  
+      if (res) {
+        Alert.alert('Added to cart!');
+      } else {
+        console.log('Unexpected response format for addToCart:', res);
+      }
+    } catch (err: any) {
+      console.log('Error adding to cart:', err.message);
+      Alert.alert('Error', 'Failed to add product to cart.');
+    }
+  };
   const getReviews = async () => {
     try {
-      const res = await axios.get('/getReviews', {
+      const res = await api('/api/getReviews', region, {
+        method: 'GET',
         params: { productId },
       });
-      if (res.data) setReviews(res.data);
-    } catch (err) {
-      console.log('Error fetching reviews:', err);
+  
+      if (res) {
+        if (Array.isArray(res)) {
+          setReviews(res);
+        } else {
+          console.log('Unexpected response format for reviews:', res);
+        }
+      } else {
+        console.log('Unexpected response format for reviews:', res);
+      }
+    } catch (err: any) {
+      console.log('Error fetching reviews:', err.message);
     }
   };
 
   const getReviewEligibility = async (id: string) => {
     try {
-      const res = await axios.get('/checkReviewEligibility', {
+      const res = await api('/api/checkReviewEligibility', region, {
+        method: 'GET',
         params: { userId: id, productId },
       });
-      if (res.data) setReviewEligible(res.data);
-    } catch (err) {
-      console.log('Error checking review eligibility:', err);
+  
+      if (res) {
+        setReviewEligible(res);
+      } else {
+        console.log('Unexpected response format for review eligibility:', res);
+      }
+    } catch (err: any) {
+      console.log('Error checking review eligibility:', err.message);
     }
   };
 
@@ -134,7 +167,7 @@ const ProductDetails = () => {
             <Text>No reviews for this product!</Text>
           )}
           <View style={styles.buttonsContainer}>
-            {/* <Button label={'Add Review'} onPress={handleGiveReview} />
+            <Button label={'Add Review'} onPress={handleGiveReview} />
             <Button label={'Close'} onPress={toggleModal} customStyle={{ marginTop: 10 }} />
             <ReviewModal
               visible={reviewModal}
@@ -142,7 +175,7 @@ const ProductDetails = () => {
               productId={productId}
               userId={userId}
               userName={firstName}
-            /> */}
+            />
           </View>
         </View>
       </Modal>
@@ -150,10 +183,21 @@ const ProductDetails = () => {
       <View style={styles.reviewContainer}>
         <Text>Color: {productColor}</Text>
       </View>
-
+      
       <View style={styles.reviewContainer}>
         <Text>Description</Text>
       </View>
+
+      <TouchableOpacity style={styles.reviewContainer} onPress={toggleAiModal}>
+        <Text>AI</Text>
+      </TouchableOpacity>
+
+      <AiModal
+        visible={AiModalVisible}
+        onClose={() => setAiModalVisible(false)}
+          product={product}
+      />
+
 
       <View style={{ alignItems: 'center' }}>
         <TouchableOpacity style={styles.cartButton} onPress={addToCart}>

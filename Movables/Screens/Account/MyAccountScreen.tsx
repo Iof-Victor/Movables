@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -6,11 +6,19 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import axios from 'axios';
-
 import { useRouter, useFocusEffect } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import Button from '@/components/Button';
+import { api } from '@/utils/api';
+import { useRegion } from '@/context/RegionContext';
+
+type UserDetails = {
+  email: string;
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  address: string;
+};
 
 const MyAccountScreen = () => {
   const router = useRouter();
@@ -21,6 +29,7 @@ const MyAccountScreen = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [address, setAddress] = useState('');
   const [id, setId] = useState('');
+  const { region } = useRegion();
 
   const getData = async () => {
     try {
@@ -37,13 +46,17 @@ const MyAccountScreen = () => {
 
   const fetchUserDetails = async (userId: string) => {
     try {
-      const res = await axios.post('/getUserDetails', { userId });
-      if (res.data) {
-        setEmail(res.data.email);
-        setFirstName(res.data.firstName);
-        setLastName(res.data.lastName);
-        setPhoneNumber(res.data.phoneNumber);
-        setAddress(res.data.address);
+      const res = await api<UserDetails>('/api/getUserDetails', region, {
+        method: 'POST',
+        body: JSON.stringify({ userId }),
+      });
+  
+      if (res) {
+        setEmail(res.email);
+        setFirstName(res.firstName);
+        setLastName(res.lastName);
+        setPhoneNumber(res.phoneNumber);
+        setAddress(res.address);
       }
     } catch (error: any) {
       console.log('Error fetching user details:', error.message);
@@ -52,18 +65,23 @@ const MyAccountScreen = () => {
 
   const saveUserDetails = async () => {
     try {
-      const res = await axios.post('/updateUserDetails', {
-        id,
-        firstName,
-        lastName,
-        phoneNumber,
-        address,
+      const res = await api('/api/updateUserDetails', region, {
+        method: 'POST',
+        body: JSON.stringify({
+          id,
+          firstName,
+          lastName,
+          phoneNumber,
+          address,
+        }),
       });
-      if (res.data) {
+
+      if (res) {
         Alert.alert('Success', 'Details saved successfully');
-        router.back(); // replaces navigation.navigate('My Account')
+        router.back(); 
       }
-    } catch {
+    } catch (error: any) {
+      console.log('Error saving user details:', error.message);
       Alert.alert('Error', 'Could not update details');
     }
   };
@@ -124,11 +142,11 @@ const MyAccountScreen = () => {
           />
         </View>
         <View style={styles.buttonWrapper}>
-          {/* <Button
+          <Button
             customStyle={styles.editAccountButton}
             onPress={saveUserDetails}
             label={'Save Changes'}
-          /> */}
+          />
         </View>
       </View>
     </ScrollView>

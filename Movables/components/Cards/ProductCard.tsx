@@ -2,6 +2,8 @@ import React from 'react';
 import { Text, View, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
 import { router } from 'expo-router';
 import axios from 'axios';
+import { useRegion } from '@/context/RegionContext';
+import { api } from '@/utils/api';
 
 interface ProductCardProps {
   productName: string;
@@ -11,6 +13,7 @@ interface ProductCardProps {
   cartId?: string;
   showAddToCart: boolean;
   productColor?: string;
+  product?: any; // Adjust the type as per your product structure
 }
 
 const ProductCard = ({
@@ -21,13 +24,15 @@ const ProductCard = ({
   cartId,
   showAddToCart,
   productColor,
+  product,
 }: ProductCardProps) => {
-  
+  const { region }= useRegion();
+
   const handleNavigate = () => {
     router.push({
       pathname: '/home/[category]/[productId]',
       params: {
-        category: 'sofa', // 🚨 you need to pass the correct category dynamically if needed
+        category: 'sofa', 
         productId,
         productName,
         image,
@@ -36,12 +41,18 @@ const ProductCard = ({
     });
   };
 
+
   const addToCart = async () => {
     try {
-      await axios.post('/addToCart', { productId, cartId });
+      console.log('Calling addToCart with:', { region, productId, cartId });
+
+      await api('/api/addToCart', region , {
+        method: 'POST',
+        body: JSON.stringify({ productId,cartId }),
+      });
       Alert.alert('Added to cart!');
-    } catch (error) {
-      console.log('Cannot add to cart:', error);
+    } catch (error: any) {
+      console.log('Cannot add to cart:', error.message);
     }
   };
 

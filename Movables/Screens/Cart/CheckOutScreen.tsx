@@ -8,14 +8,23 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import axios from 'axios';
-import * as SecureStore from 'expo-secure-store'; 
+import * as SecureStore from 'expo-secure-store';
 import { useRouter, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { api } from '@/utils/api'; 
+import { useRegion } from '@/context/RegionContext';
+
+type UserDetails = {
+  firstName: string;
+  lastName: string;
+  address: string;
+  phoneNumber: string;
+};
+
 
 const CheckOutScreen = () => {
   const router = useRouter();
   const { total } = useLocalSearchParams<{ total: string }>();
-
+  const { region } = useRegion();
   const [address, setAddress] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -24,7 +33,7 @@ const CheckOutScreen = () => {
 
   const getData = async () => {
     try {
-      const jsonValue = await SecureStore.getItemAsync('storage_Key'); // Updated to SecureStore
+      const jsonValue = await SecureStore.getItemAsync('storage_Key');
       const data = JSON.parse(jsonValue || '{}');
       if (data?.id) {
         setUserId(data.id);
@@ -37,35 +46,47 @@ const CheckOutScreen = () => {
 
   const fetchUserDetails = async (id: string) => {
     try {
-      const res = await axios.post('/getUserDetails', { userId: id });
-      if (res?.data) {
-        setFirstName(res.data.firstName);
-        setLastName(res.data.lastName);
-        setPhoneNumber(res.data.phoneNumber);
-        setAddress(res.data.address);
+      const res = await api<UserDetails>('/api/getUserDetails', region, {
+        method: 'POST',
+        body: JSON.stringify({ userId: id }),
+      });
+
+      if (res) {
+        setFirstName(res.firstName);
+        setLastName(res.lastName);
+        setPhoneNumber(res.phoneNumber);
+        setAddress(res.address);
       }
     } catch (e) {
-      console.log('Error fetching user details');
+      if (e instanceof Error) {
+        console.log('Error fetching user details:', e.message);
+      } else {
+        console.log('Error fetching user details:', e);
+      }
     }
   };
 
   const createOrder = async () => {
     try {
-      const res = await axios.post('/createOrder', {
-        firstName,
-        lastName,
-        totalSum: total,
-        address,
-        phoneNumber,
-        userId,
+      const res = await api('/api/createOrder', region, {
+        method: 'POST',
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          totalSum: total,
+          address,
+          phoneNumber,
+          userId,
+        }),
       });
-      if (res?.data) {
+
+      if (res) {
         Alert.alert('Success', 'Order created successfully');
         router.push('/cart/payment');
       }
-    } catch (e) {
+    } catch (e: any) {
       Alert.alert('Error', 'Could not create order');
-      console.log(e);
+      console.log('Error creating order:', e.message);
     }
   };
 

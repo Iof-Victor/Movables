@@ -10,14 +10,15 @@ import {
   ScrollView,
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import axios from 'axios';
-import * as SecureStore from 'expo-secure-store'; // Updated import
+import * as SecureStore from 'expo-secure-store';
 import { Picker } from '@react-native-picker/picker';
-// import ProductGrid from '../../Components/ProductGrid';
-// import Button from '../../Components/Button';
+import ProductGrid from '@/components/Grids/ProductGrid';
+import Button from '@/components/Button';
+import { api } from '@/utils/api';
+import { useRegion } from '@/context/RegionContext'; 
 
 const ProductsScreen = () => {
-  const { productType } = useLocalSearchParams<{ productType: string }>();
+  const { category } = useLocalSearchParams<{ category: string }>();
 
   const [cartId, setCartId] = useState('');
   const [products, setProducts] = useState<any[]>([]);
@@ -31,7 +32,7 @@ const ProductsScreen = () => {
   const [materials, setMaterials] = useState<string>();
   const [sortOrderPrice, setSortOrderPrice] = useState<string>();
   const [sortOrderName, setSortOrderName] = useState<string>();
-
+  const { region } = useRegion(); 
   const priceOptions = ['100', '250', '400'];
   const colorOptions = ['White', 'Black', 'Green', 'Cream', 'Pink', 'Grey', 'Brown'];
   const materialsOptions = ['Wood', 'Plywood', 'Metal', 'Plastic'];
@@ -46,7 +47,7 @@ const ProductsScreen = () => {
 
   const getData = async () => {
     try {
-      const jsonValue = await SecureStore.getItem('@storage_Key');
+      const jsonValue = await SecureStore.getItem('storage_Key');
       const data = JSON.parse(jsonValue || '{}');
       setCartId(data.cartId || '');
     } catch (e) {
@@ -56,55 +57,73 @@ const ProductsScreen = () => {
 
   const fetchProducts = async () => {
     try {
-      const res = await axios.get('/getAllProducts', {
+      const res = await api<any[]>('/api/getAllProducts', region, {
+        method: 'GET',
         params: {
-          productType,
+          productType:category,
           pageNumber: page,
           nrOfProducts: 6,
         },
       });
-      if (res?.data) setProducts(res.data);
+  
+      if (Array.isArray(res)) setProducts(res);
     } catch (error: any) {
-      console.log(error.message);
+      console.log('Error fetching products:', error.message);
     }
   };
-
+  
   const getFilteredProducts = async () => {
     try {
-      const res = await axios.get('/getFilteredProducts', {
+      const res = await api<any[]>('/api/getFilteredProducts', region, {
+        method: 'GET',
         params: {
-          productType,
-          price,
-          material: materials,
-          color,
+          productType: category,
+          price: price || '',
+          material: materials || '',
+          color: color || '',
           pageNumber: page,
           nrOfProducts: 6,
         },
       });
-      if (res?.data) setProducts(res.data);
+  
+      if (Array.isArray(res)) {
+        setProducts(res);
+      } else {
+        console.log('Unexpected response format:', res);
+        setProducts([]);
+      }
     } catch (error: any) {
-      console.log(error.message);
+      console.log('Error fetching filtered products:', error.message);
     }
   };
-
+  
+  
   const getSortedProducts = async () => {
     try {
-      const res = await axios.get('/getSortedProducts', {
+      const res = await api<any[]>('/api/getSortedProducts', region, {
+        method: 'GET',
         params: {
-          productType,
+          productType:category,
           sortBy: sortOrderPrice ? 'price' : 'name',
-          sortOrder: sortOrderPrice || sortOrderName,
+          sortOrder: sortOrderPrice || sortOrderName || '',
           pageNumber: page,
           nrOfProducts: 6,
-          material: materials,
-          color,
+          material: materials || '',
+          color: color || '',
         },
       });
-      if (res?.data) setProducts(res.data);
+  
+      if (Array.isArray(res)) {
+        setProducts(res);
+      } else {
+        console.log('Unexpected response format:', res);
+        setProducts([]);
+      }
     } catch (error: any) {
-      console.log(error.message);
+      console.log('Error fetching sorted products:', error.message);
     }
   };
+  
 
   useEffect(() => {
     getData();
@@ -159,13 +178,13 @@ const ProductsScreen = () => {
               ))}
             </Picker>
           </View>
-          {/* <Button
+          <Button
             onPress={() => {
               getFilteredProducts();
               setModalVisibleFilter(false);
             }}
             label="Apply Filters"
-          /> */}
+          />
         </ScrollView>
       </Modal>
 
@@ -198,18 +217,18 @@ const ProductsScreen = () => {
               <Picker.Item key={opt.value} label={opt.label} value={opt.value} />
             ))}
           </Picker>
-          {/* <Button
+          <Button
             onPress={() => {
               getSortedProducts();
               setModalVisibleSort(false);
             }}
             label="Apply Sort"
-          /> */}
+          />
         </View>
       </Modal>
 
       <View style={styles.filtersContainer}>
-        {/* <Button
+        <Button
           onPress={() => setModalVisibleFilter(true)}
           label="Filter"
           customStyle={styles.filterButton}
@@ -220,10 +239,10 @@ const ProductsScreen = () => {
           label="Sort"
           customStyle={styles.filterButton}
           labelStyle={styles.filteringText}
-        /> */}
+        />
       </View>
 
-      {/* <ProductGrid products={products} cartId={cartId} showAddToCart={true} /> */}
+      <ProductGrid products={products} cartId={cartId} showAddToCart={true} />
 
       <View style={styles.buttonsContainer}>
         {page > 1 && (

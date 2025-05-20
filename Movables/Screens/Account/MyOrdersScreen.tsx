@@ -9,10 +9,13 @@ import {
 import { useFocusEffect } from 'expo-router';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
-import OrdersGrid from '../../components/Grids/OrdersGrid'; // Adjust the import path as necessary
+import OrdersGrid from '../../components/Grids/OrdersGrid'; 
+import { api } from '@/utils/api';
+import { useRegion } from '@/context/RegionContext';
 
 const MyOrdersScreen = () => {
   const [orders, setOrders] = useState<any[]>([]);
+  const { region } = useRegion();
 
   const fetchOrders = async () => {
     try {
@@ -20,14 +23,18 @@ const MyOrdersScreen = () => {
       const data = JSON.parse(jsonValue || '{}');
       if (!data?.id) return;
 
-      const res = await axios.get('/getOrders', {
+      const res = await api('/api/getOrders', region, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         params: {
           userId: data.id,
         },
       });
 
-      if (res?.data) {
-        setOrders(res.data);
+      if (res) {
+        setOrders(Array.isArray(res) ? res : []);
       }
     } catch (error: any) {
       console.log('Error fetching orders:', error.message);

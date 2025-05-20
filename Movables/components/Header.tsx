@@ -8,16 +8,35 @@ import {
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useNavigation } from 'expo-router';
+import { useRouter,usePathname } from 'expo-router';
 
 
 const Header = ({ title }: { title?: string }) => {
   const navigation = useNavigation();
   const [goBackTrigger, setGoBackTrigger] = useState(true);
+  const router = useRouter();
+  const pathname = usePathname(); 
 
   useEffect(() => {
     const noBackTitles = ['Home', 'Cart', 'Log In', 'My Account', 'Edit Details'];
     setGoBackTrigger(!noBackTitles.includes(title ?? ''));
   }, [title]);
+
+  useEffect(() => {
+    const noBackPaths = ['/home', '/cart', '/account/auth', '/account'];
+    const isNoBackPath = noBackPaths.includes(pathname);
+    const isCheckoutPage = pathname === '/cart/checkout';
+
+    setGoBackTrigger(!isNoBackPath || isCheckoutPage);
+  }, [pathname]);
+
+  const handleGoBack = () => {
+    if (router.canGoBack()) {
+      router.back(); 
+    } else {
+      navigation.goBack(); 
+    }
+  };
 
   return (
     <SafeAreaView style={styles.backgroundColor}>
@@ -25,7 +44,7 @@ const Header = ({ title }: { title?: string }) => {
         <View style={styles.headerContainer}>
           {goBackTrigger && (
             <TouchableOpacity
-              onPress={() => navigation.goBack()}
+              onPress={handleGoBack}
               testID="headerBackButton"
               style={styles.icon}
             >

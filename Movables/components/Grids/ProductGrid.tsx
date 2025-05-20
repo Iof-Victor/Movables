@@ -8,6 +8,7 @@ interface Product {
   price: number;
   image: string;
   color?: string;
+  
 }
 
 interface ProductGridProps {
@@ -16,29 +17,6 @@ interface ProductGridProps {
     cartId?: string;
 }
 
-const mockProducts: Product[] = [
-    {
-        id: '1',
-        productName: 'Product 1',
-        price: 29.99,
-        image: 'https://via.placeholder.com/150',
-        color: 'red',
-    },
-    {
-        id: '2',
-        productName: 'Product 2',
-        price: 49.99,
-        image: 'https://via.placeholder.com/150',
-        color: 'blue',
-    },
-    {
-        id: '3',
-        productName: 'Product 3',
-        price: 19.99,
-        image: 'https://via.placeholder.com/150',
-        color: 'green',
-    },
-];
 
 const ProductGrid = ({ products, showAddToCart, cartId }: ProductGridProps) => {
   const renderRow = ({ item }: { item: Product[] }) => (
@@ -53,6 +31,7 @@ const ProductGrid = ({ products, showAddToCart, cartId }: ProductGridProps) => {
           cartId={cartId}
           showAddToCart={showAddToCart}
           productColor={product.color}
+          product={product}
         />
       ))}
     </View>
@@ -60,8 +39,8 @@ const ProductGrid = ({ products, showAddToCart, cartId }: ProductGridProps) => {
 
 
   const rows: Product[][] = [];
-  for (let i = 0; i < products.length; i += 2) {
-    rows.push(products.slice(i, i + 2));
+  for (let i = 0; i < products?.length; i += 2) {
+    rows.push(products?.slice(i, i + 2));
   }
 
   return (

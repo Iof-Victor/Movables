@@ -12,17 +12,21 @@ const baseUrls = {
 
 export const api = async <T>(
   endpoint: string,
-  region: "EU" | "US" | "ASIA",
-  options: RequestInit = {}
+  region: "EU" | "US" | "ASIA" | null,
+  options: RequestInit & { params?: Record<string, any> } = {}
 ): Promise<T> => {
   if (!region) {
     throw new Error("Region is not set. Cannot determine the database to use.");
   }
-  console.log('in api function, region is', region);
-  console.log('in api function, endpoint is', endpoint);
-  console.log('base url is', baseUrls[region]);
 
-  const res = await fetch(`${baseUrls[region]}${endpoint}`, {
+  const url = new URL(`${baseUrls[region]}${endpoint}`);
+  if (options.params) {
+    Object.entries(options.params).forEach(([key, value]) =>
+      url.searchParams.append(key, String(value))
+    );
+  }
+
+  const res = await fetch(url.toString(), {
     ...options,
     headers: {
       "Content-Type": "application/json",
@@ -31,7 +35,6 @@ export const api = async <T>(
   });
 
   if (!res.ok) {
-  
     const error = await res.json();
     throw new Error(error.message || "API error");
   }

@@ -7,11 +7,11 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import * as SecureStore from 'expo-secure-store'; // Updated import
+import * as SecureStore from 'expo-secure-store';
 import axios from 'axios';
 import { useRouter } from 'expo-router';
 import { api } from '@/utils/api';
-import { useRegion } from '@/context/RegionContext'; // Import useRegion
+import { useRegion } from '@/context/RegionContext'; 
 import ProductGrid from '../components/Grids/ProductGrid';
 import Button from '@/components/Button';
 
@@ -19,12 +19,12 @@ const HomePageScreen = () => {
   const router = useRouter();
   const [data, setData] = useState<any>();
   const [products, setProducts] = useState<any>();
-  const { region } = useRegion(); // Use the region from context
+  const { region } = useRegion();
   
 
   const getData = async () => {
     try {
-      const jsonValue = await SecureStore.getItem('@storage_Key');
+      const jsonValue = await SecureStore.getItem('storage_Key');
       setData(jsonValue);
       return jsonValue != null ? JSON.parse(jsonValue) : null;
     } catch (e) {
@@ -40,16 +40,15 @@ const HomePageScreen = () => {
       }
 
       const res = await api('/api/getRandomProducts', region);
-      console.log('response is', res);
       setProducts(res);
     } catch (error: any) {
       console.error('Error fetching random products:', error.message);
     }
   };
 
-  // useEffect(() => {
-  //   getData();
-  // }, []);
+  useEffect(() => {
+    getData();
+  }, []);
 
   useEffect(() => {
     if (region) {
@@ -75,10 +74,10 @@ const HomePageScreen = () => {
           {(
       [
         { icon: 'table-furniture', type: 'table' },
-        { icon: 'chair-rolling', type: 'chair' },
+        { icon: 'chair-rolling', type: 'Chair' },
         { icon: 'wardrobe', type: 'wardrobe' },
-        { icon: 'sofa', type: 'sofa' },
-        { icon: 'bed-king', type: 'bed-king' },
+        { icon: 'sofa', type: 'Sofa' },
+        { icon: 'bed-king', type: 'Bed' },
       ] as const
     ).map(({ icon, type }) => (
       <TouchableOpacity
@@ -94,13 +93,13 @@ const HomePageScreen = () => {
       <ProductGrid products={products} showAddToCart={false} />
 
       <View style={styles.buttonContainer}>
-        {/* <Button
+        <Button
           label="Products"
           onPress={() => navigateToProducts('')}
           backgroundColor="#9EB7B8"
           width={200}
           height={50}
-        /> */}
+        />
       </View>
     </>
   );

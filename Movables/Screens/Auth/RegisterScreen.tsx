@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import axios from 'axios';
+import { api } from '@/utils/api';
+import { useRegion } from '@/context/RegionContext';
 
 const RegisterScreen = () => {
   const [email, setEmail] = useState('');
@@ -17,6 +19,7 @@ const RegisterScreen = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
+  const { region } = useRegion();
 
   const checkEqual = (a: string, b: string) => a.trim() === b.trim();
 
@@ -34,9 +37,13 @@ const RegisterScreen = () => {
     }
 
     try {
-      const res = await axios.post('/createUser', { email, password });
+      const res = await api('/api/createUser', region, {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      });
 
-      if (res.data) {
+
+      if (res) {
         router.replace('/account/auth'); // or wherever your login page is
       }
     } catch (error: any) {

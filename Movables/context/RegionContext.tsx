@@ -1,16 +1,16 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-type Region = "EU" | "US" | "ASIA";
+type Region = "EU" | "US" | "ASIA" | null;
 
 interface RegionContextProps {
-  region: Region | null;
+  region: Region;
   setRegion: (region: Region) => void;
 }
 
 const RegionContext = createContext<RegionContextProps | undefined>(undefined);
 
 export const RegionProvider = ({ children }: { children: ReactNode }) => {
-  const [region, setRegion] = useState<Region | null>(null);
+  const [region, setRegion] = useState<Region>(null);
 
   return (
     <RegionContext.Provider value={{ region, setRegion }}>
