@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, FlatList, StyleSheet } from 'react-native';
-import ProductCard from '../Cards/ProductCard';
+import React from "react";
+import { View, FlatList, StyleSheet } from "react-native";
+import ProductCard from "../Cards/ProductCard";
 
 interface Product {
   id: string;
@@ -8,15 +8,13 @@ interface Product {
   price: number;
   image: string;
   color?: string;
-  
 }
 
 interface ProductGridProps {
-    products: Product[];
-    showAddToCart: boolean;
-    cartId?: string;
+  products: Product[];
+  showAddToCart: boolean;
+  cartId?: string;
 }
-
 
 const ProductGrid = ({ products, showAddToCart, cartId }: ProductGridProps) => {
   const renderRow = ({ item }: { item: Product[] }) => (
@@ -36,7 +34,6 @@ const ProductGrid = ({ products, showAddToCart, cartId }: ProductGridProps) => {
       ))}
     </View>
   );
-
 
   const rows: Product[][] = [];
   for (let i = 0; i < products?.length; i += 2) {
@@ -63,9 +60,9 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 10,
     paddingBottom: 10,
-    backgroundColor: 'white',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    backgroundColor: "white",
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
 });
 

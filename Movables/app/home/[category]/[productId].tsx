@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from "react";
 import {
   View,
   Text,
@@ -8,37 +8,41 @@ import {
   TouchableOpacity,
   Modal,
   Alert,
-} from 'react-native';
-import axios from 'axios';
-import * as SecureStore from 'expo-secure-store'; 
-import { useLocalSearchParams } from 'expo-router';
-import { api } from '@/utils/api'; 
-import { useRegion } from '@/context/RegionContext';
+} from "react-native";
+import axios from "axios";
+import * as SecureStore from "expo-secure-store";
+import { useLocalSearchParams } from "expo-router";
+import { api } from "@/utils/api";
+import { useRegion } from "@/context/RegionContext";
 
-import Button from '../../../components/Button';
-import ReviewModal from '../../../components/ReviewModal';
-import AiModal from '@/components/AiModal';
+import Button from "../../../components/Button";
+import ReviewModal from "../../../components/ReviewModal";
+import AiModal from "@/components/AiModal";
 
 const ProductDetails = () => {
-  const { category, productId, productName, image, productColor,product } = useLocalSearchParams<{
+  const {
+    category,
+    productId,
+    productName,
+    image,
+    productColor,
+    product: rawProduct,
+  } = useLocalSearchParams<{
     category: string;
     productId: string;
     productName: string;
     image: string;
     productColor: string;
-    product: any; // Adjust the type as per your product structure
+    product: any;
   }>();
-
-  console.log('111 product',product);
-
   const [reviews, setReviews] = useState<any[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [reviewModal, setReviewModal] = useState(false);
   const [AiModalVisible, setAiModalVisible] = useState(false);
-  const [userId, setUserId] = useState('');
+  const [userId, setUserId] = useState("");
   const [reviewEligible, setReviewEligible] = useState<any>();
-  const [firstName, setFirstName] = useState('');
-  const [cartId, setCartId] = useState('');
+  const [firstName, setFirstName] = useState("");
+  const [cartId, setCartId] = useState("");
   const { region } = useRegion();
 
   const avgRating =
@@ -50,6 +54,15 @@ const ProductDetails = () => {
   const toggleModalReview = () => setReviewModal(!reviewModal);
   const toggleAiModal = () => setAiModalVisible(!AiModalVisible);
 
+  const product = useMemo(() => {
+    try {
+      return JSON.parse(rawProduct);
+    } catch (e) {
+      console.error("Failed to parse product from URL params", e);
+      return null;
+    }
+  }, [rawProduct]);
+
   const handleGiveReview = () => {
     if (reviewEligible?.code === 3) {
       Alert.alert(reviewEligible.message);
@@ -60,8 +73,8 @@ const ProductDetails = () => {
 
   const getData = async () => {
     try {
-      const jsonValue = await SecureStore.getItem('storage_Key');
-      const data = JSON.parse(jsonValue || '{}');
+      const jsonValue = await SecureStore.getItem("storage_Key");
+      const data = JSON.parse(jsonValue || "{}");
       if (data?.id) {
         setUserId(data.id);
         setCartId(data.cartId);
@@ -69,62 +82,62 @@ const ProductDetails = () => {
         getReviewEligibility(data.id);
       }
     } catch (e) {
-      console.log('Error loading user data:', e);
+      console.log("Error loading user data:", e);
     }
   };
 
   const addToCart = async () => {
     try {
-      const res = await api('/api/addToCart', region, {
-        method: 'POST',
+      const res = await api("/api/addToCart", region, {
+        method: "POST",
         body: JSON.stringify({ productId, cartId }),
       });
-  
+
       if (res) {
-        Alert.alert('Added to cart!');
+        Alert.alert("Added to cart!");
       } else {
-        console.log('Unexpected response format for addToCart:', res);
+        console.log("Unexpected response format for addToCart:", res);
       }
     } catch (err: any) {
-      console.log('Error adding to cart:', err.message);
-      Alert.alert('Error', 'Failed to add product to cart.');
+      console.log("Error adding to cart:", err.message);
+      Alert.alert("Error", "Failed to add product to cart.");
     }
   };
   const getReviews = async () => {
     try {
-      const res = await api('/api/getReviews', region, {
-        method: 'GET',
+      const res = await api("/api/getReviews", region, {
+        method: "GET",
         params: { productId },
       });
-  
+
       if (res) {
         if (Array.isArray(res)) {
           setReviews(res);
         } else {
-          console.log('Unexpected response format for reviews:', res);
+          console.log("Unexpected response format for reviews:", res);
         }
       } else {
-        console.log('Unexpected response format for reviews:', res);
+        console.log("Unexpected response format for reviews:", res);
       }
     } catch (err: any) {
-      console.log('Error fetching reviews:', err.message);
+      console.log("Error fetching reviews:", err.message);
     }
   };
 
   const getReviewEligibility = async (id: string) => {
     try {
-      const res = await api('/api/checkReviewEligibility', region, {
-        method: 'GET',
+      const res = await api("/api/checkReviewEligibility", region, {
+        method: "GET",
         params: { userId: id, productId },
       });
-  
+
       if (res) {
         setReviewEligible(res);
       } else {
-        console.log('Unexpected response format for review eligibility:', res);
+        console.log("Unexpected response format for review eligibility:", res);
       }
     } catch (err: any) {
-      console.log('Error checking review eligibility:', err.message);
+      console.log("Error checking review eligibility:", err.message);
     }
   };
 
@@ -151,7 +164,7 @@ const ProductDetails = () => {
           <Text style={styles.modalTitle}>Reviews</Text>
           <View style={styles.ratingContainer}>
             <Text style={styles.avgRating}>
-              {avgRating > 0 ? avgRating.toFixed(1) : '0.0'}
+              {avgRating > 0 ? avgRating.toFixed(1) : "0.0"}
             </Text>
             <Text style={styles.ratingStars}>★★★★★</Text>
           </View>
@@ -167,8 +180,12 @@ const ProductDetails = () => {
             <Text>No reviews for this product!</Text>
           )}
           <View style={styles.buttonsContainer}>
-            <Button label={'Add Review'} onPress={handleGiveReview} />
-            <Button label={'Close'} onPress={toggleModal} customStyle={{ marginTop: 10 }} />
+            <Button label={"Add Review"} onPress={handleGiveReview} />
+            <Button
+              label={"Close"}
+              onPress={toggleModal}
+              customStyle={{ marginTop: 10 }}
+            />
             <ReviewModal
               visible={reviewModal}
               onClose={toggleModalReview}
@@ -183,7 +200,7 @@ const ProductDetails = () => {
       <View style={styles.reviewContainer}>
         <Text>Color: {productColor}</Text>
       </View>
-      
+
       <View style={styles.reviewContainer}>
         <Text>Description</Text>
       </View>
@@ -195,11 +212,10 @@ const ProductDetails = () => {
       <AiModal
         visible={AiModalVisible}
         onClose={() => setAiModalVisible(false)}
-          product={product}
+        product={product}
       />
 
-
-      <View style={{ alignItems: 'center' }}>
+      <View style={{ alignItems: "center" }}>
         <TouchableOpacity style={styles.cartButton} onPress={addToCart}>
           <Text style={styles.cartText}>Add to Cart</Text>
         </TouchableOpacity>
@@ -210,12 +226,12 @@ const ProductDetails = () => {
 
 const styles = StyleSheet.create({
   cardContainer: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     flex: 1,
   },
   imageContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     marginTop: 50,
     padding: 5,
   },
@@ -226,7 +242,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   reviewContainer: {
     marginTop: 10,
@@ -234,65 +250,65 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   cartButton: {
-    backgroundColor: '#9EB7B8',
+    backgroundColor: "#9EB7B8",
     marginTop: 8,
     marginBottom: 5,
     width: 250,
     borderRadius: 8,
     height: 35,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   cartText: {
     fontSize: 14,
-    color: 'white',
+    color: "white",
   },
   modalContent: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     padding: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     borderRadius: 8,
     flex: 1,
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 20,
   },
   ratingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 20,
   },
   avgRating: {
     fontSize: 32,
     marginRight: 10,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   ratingStars: {
     fontSize: 18,
-    color: 'grey',
+    color: "grey",
   },
   reviewItem: {
     margin: 4,
     borderWidth: 1,
     borderRadius: 5,
-    width: '100%',
+    width: "100%",
     padding: 10,
-    borderColor: '#d9d9d9',
+    borderColor: "#d9d9d9",
   },
   reviewRating: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   reviewComment: {
     fontSize: 16,
   },
   buttonsContainer: {
     marginTop: 20,
-    width: '100%',
-    alignItems: 'center',
+    width: "100%",
+    alignItems: "center",
   },
 });
 

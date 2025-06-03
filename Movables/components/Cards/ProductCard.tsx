@@ -1,9 +1,16 @@
-import React from 'react';
-import { Text, View, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
-import { router } from 'expo-router';
-import axios from 'axios';
-import { useRegion } from '@/context/RegionContext';
-import { api } from '@/utils/api';
+import React from "react";
+import {
+  Text,
+  View,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  Alert,
+} from "react-native";
+import { router } from "expo-router";
+import axios from "axios";
+import { useRegion } from "@/context/RegionContext";
+import { api } from "@/utils/api";
 
 interface ProductCardProps {
   productName: string;
@@ -26,33 +33,33 @@ const ProductCard = ({
   productColor,
   product,
 }: ProductCardProps) => {
-  const { region }= useRegion();
+  const { region } = useRegion();
 
   const handleNavigate = () => {
     router.push({
-      pathname: '/home/[category]/[productId]',
+      pathname: "/home/[category]/[productId]",
       params: {
-        category: 'sofa', 
+        category: "sofa",
         productId,
         productName,
         image,
         productColor,
+        product: JSON.stringify(product),
       },
     });
   };
 
-
   const addToCart = async () => {
     try {
-      console.log('Calling addToCart with:', { region, productId, cartId });
+      console.log("Calling addToCart with:", { region, productId, cartId });
 
-      await api('/api/addToCart', region , {
-        method: 'POST',
-        body: JSON.stringify({ productId,cartId }),
+      await api("/api/addToCart", region, {
+        method: "POST",
+        body: JSON.stringify({ productId, cartId }),
       });
-      Alert.alert('Added to cart!');
+      Alert.alert("Added to cart!");
     } catch (error: any) {
-      console.log('Cannot add to cart:', error.message);
+      console.log("Cannot add to cart:", error.message);
     }
   };
 
@@ -80,16 +87,16 @@ const ProductCard = ({
 const styles = StyleSheet.create({
   container: {
     flex: 0.5,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'white',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "white",
     marginLeft: 5,
     marginRight: 5,
     borderRadius: 5,
     paddingVertical: 10,
   },
   logo: {
-    resizeMode: 'contain',
+    resizeMode: "contain",
     height: 120,
     width: 120,
     borderRadius: 10,
@@ -103,24 +110,24 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   price: {
     fontSize: 13,
   },
   cartButton: {
-    backgroundColor: '#153243',
+    backgroundColor: "#153243",
     marginTop: 8,
     marginBottom: 5,
     width: 100,
     borderRadius: 50,
     height: 35,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   cartText: {
     fontSize: 14,
-    color: 'white',
+    color: "white",
   },
 });
 

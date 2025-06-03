@@ -13,9 +13,14 @@ import { useRegion } from "@/context/RegionContext";
 import { api } from "@/utils/api";
 
 type Product = {
-  name: string;
-  description: string;
+  id: string;
+  productType: string;
+  price: string;
+  productName: string;
   quantity: number;
+  image: string;
+  color: string;
+  material: string;
 };
 
 type ChatbotModalProps = {
@@ -29,7 +34,11 @@ type Message = {
   text: string;
 };
 
-const AiModal: React.FC<ChatbotModalProps> = ({ visible, onClose, product }) => {
+const AiModal: React.FC<ChatbotModalProps> = ({
+  visible,
+  onClose,
+  product,
+}) => {
   const [messages, setMessages] = useState<Message[]>([
     { sender: "ai", text: "How can I be of service?" },
   ]);
@@ -39,37 +48,37 @@ const AiModal: React.FC<ChatbotModalProps> = ({ visible, onClose, product }) => 
 
   const sendMessage = async () => {
     if (!input.trim()) return;
-  
+
     const userMessage: Message = { sender: "user", text: input };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setLoading(true);
-  
+
     try {
-      const res: { reply?: string } = await api('/api/ask-ai', region, {
-        method: 'POST',
+      const res: { reply?: string } = await api("/api/askAI", region, {
+        method: "POST",
         body: JSON.stringify({
           message: userMessage.text,
           product: {
-            name: product.name,
-            description: product.description,
+            name: product.productName,
+            description: `A ${product.color} ${product.productType} made from ${product.material}, priced at $${product.price}.`,
             quantity: product.quantity,
           },
         }),
       });
-  
+
       if (res && res.reply) {
         const aiMessage: Message = { sender: "ai", text: res.reply };
         setMessages((prev) => [...prev, aiMessage]);
       } else {
-        console.log('Unexpected response format for ask-ai:', res);
+        console.log("Unexpected response format for ask-ai:", res);
         setMessages((prev) => [
           ...prev,
           { sender: "ai", text: "Sorry, something went wrong." },
         ]);
       }
     } catch (err: any) {
-      console.error('Error sending message to AI:', err.message);
+      console.error("Error sending message to AI:", err.message);
       setMessages((prev) => [
         ...prev,
         { sender: "ai", text: "Sorry, something went wrong." },
@@ -93,9 +102,17 @@ const AiModal: React.FC<ChatbotModalProps> = ({ visible, onClose, product }) => 
   if (!visible) return null;
 
   return (
-    <Modal animationType="slide" transparent visible={visible} onRequestClose={onClose}>
+    <Modal
+      animationType="slide"
+      transparent
+      visible={visible}
+      onRequestClose={onClose}
+    >
       <TouchableOpacity style={styles.backdrop} onPress={onClose}>
-        <TouchableOpacity style={styles.modalContainer} onPress={(e) => e.stopPropagation()}>
+        <TouchableOpacity
+          style={styles.modalContainer}
+          onPress={(e) => e.stopPropagation()}
+        >
           <Text style={styles.title}>Welcome to our AI support</Text>
           <FlatList
             data={messages}
@@ -110,7 +127,11 @@ const AiModal: React.FC<ChatbotModalProps> = ({ visible, onClose, product }) => 
               placeholder="Type your question..."
               style={styles.input}
             />
-            <TouchableOpacity style={styles.sendButton} onPress={sendMessage} disabled={loading}>
+            <TouchableOpacity
+              style={styles.sendButton}
+              onPress={sendMessage}
+              disabled={loading || !product?.productName}
+            >
               <Text style={styles.sendText}>{loading ? "..." : "Send"}</Text>
             </TouchableOpacity>
           </View>
