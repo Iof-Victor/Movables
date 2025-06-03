@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   TextInput,
@@ -7,54 +7,53 @@ import {
   TouchableOpacity,
   Text,
   Alert,
-} from 'react-native';
-import { router } from 'expo-router';
-import axios from 'axios';
-import { api } from '@/utils/api';
-import { useRegion } from '@/context/RegionContext';
+} from "react-native";
+import { router } from "expo-router";
+import axios from "axios";
+import { api } from "@/utils/api";
+import { useRegion } from "@/context/RegionContext";
 
 const RegisterScreen = () => {
-  const [email, setEmail] = useState('');
-  const [confirmEmail, setConfirmEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [alertMessage, setAlertMessage] = useState('');
+  const [email, setEmail] = useState("");
+  const [confirmEmail, setConfirmEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [alertMessage, setAlertMessage] = useState("");
   const { region } = useRegion();
 
   const checkEqual = (a: string, b: string) => a.trim() === b.trim();
 
   const handleRegister = async () => {
     if (!email || !confirmEmail || !password || !confirmPassword) {
-      return setAlertMessage('Please fill in all the fields!');
+      return setAlertMessage("Please fill in all the fields!");
     }
 
     if (!checkEqual(email, confirmEmail)) {
-      return setAlertMessage('Email and Confirm Email must match');
+      return setAlertMessage("Email and Confirm Email must match");
     }
 
     if (!checkEqual(password, confirmPassword)) {
-      return setAlertMessage('Password and Confirm Password must match');
+      return setAlertMessage("Password and Confirm Password must match");
     }
 
     try {
-      const res = await api('/api/createUser', region, {
-        method: 'POST',
+      const res = await api("/api/createUser", region, {
+        method: "POST",
         body: JSON.stringify({ email, password }),
       });
 
-
       if (res) {
-        router.replace('/account/auth'); // or wherever your login page is
+        router.replace("/account/auth");
       }
     } catch (error: any) {
       if (error?.response?.data) {
         const msg = error.response.data.email || error.response.data.username;
         setAlertMessage(
-          msg || 'Username or Email is already used. Please try again.'
+          msg || "Username or Email is already used. Please try again."
         );
       } else {
-        setAlertMessage('Registration failed. Please try again.');
-        console.log('Registration error:', error.message);
+        setAlertMessage("Registration failed. Please try again.");
+        console.log("Registration error:", error.message);
       }
     }
   };
@@ -124,27 +123,27 @@ const RegisterScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
   },
   logoContainer: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
-    alignItems: 'center',
+    alignItems: "center",
     right: 130,
   },
   logo: {
-    resizeMode: 'cover',
+    resizeMode: "cover",
     height: 160,
     width: 150,
   },
   inputView: {
     marginVertical: 10,
-    alignItems: 'center',
+    alignItems: "center",
   },
   textInput: {
-    backgroundColor: '#D9D9D9',
+    backgroundColor: "#D9D9D9",
     height: 50,
     width: 350,
     borderRadius: 15,
@@ -152,20 +151,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   registerButton: {
-    backgroundColor: '#9EB7B8',
+    backgroundColor: "#9EB7B8",
     marginTop: 30,
     width: 200,
     borderRadius: 15,
     height: 50,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   logInText: {
     fontSize: 15,
-    color: 'white',
+    color: "white",
   },
   errorAlert: {
-    color: 'red',
+    color: "red",
     fontSize: 13,
     marginVertical: 10,
   },

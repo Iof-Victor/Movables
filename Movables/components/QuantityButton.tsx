@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons'; 
-import axios from 'axios';
-import { api } from '@/utils/api';
-import { useRegion } from '@/context/RegionContext'; // Import useRegion
+import React, { useState, useEffect } from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import axios from "axios";
+import { api } from "@/utils/api";
+import { useRegion } from "@/context/RegionContext";
 
 interface QuantityButtonProps {
   quantity: number;
@@ -12,33 +12,45 @@ interface QuantityButtonProps {
   onChangeQuantity: (newQuantity: number) => void;
 }
 
-const QuantityButton = ({ quantity, cartId, productId, onChangeQuantity }: QuantityButtonProps) => {
+const QuantityButton = ({
+  quantity,
+  cartId,
+  productId,
+  onChangeQuantity,
+}: QuantityButtonProps) => {
   const [quantityButton, setQuantityButton] = useState(quantity);
-  const { region } = useRegion(); 
+  const { region } = useRegion();
 
   const addToCart = async () => {
     try {
-      await api('api/addToCart', region || "EU", { method:"POST",body: JSON.stringify({productId, cartId })});
+      await api("api/addToCart", region || "EU", {
+        method: "POST",
+        body: JSON.stringify({ productId, cartId }),
+      });
     } catch (error) {
-      console.log('Cannot add to cart', error);
+      console.log("Cannot add to cart", error);
     }
   };
 
   const deleteFromCart = async () => {
     try {
-      console.log('Calling deleteFromCart with:', { region, productId, cartId });
-  
-      await api('/deleteProductFromCart', region || "EU", {
+      console.log("Calling deleteFromCart with:", {
+        region,
+        productId,
+        cartId,
+      });
+
+      await api("/deleteProductFromCart", region || "EU", {
         method: "POST",
         body: JSON.stringify({ productId, cartId }),
       });
-  
-      console.log('Product successfully removed from cart');
+
+      console.log("Product successfully removed from cart");
     } catch (error: any) {
-      console.error('Cannot remove from cart:', error.message);
+      console.error("Cannot remove from cart:", error.message);
     }
   };
-  
+
   useEffect(() => {
     setQuantityButton(quantity);
   }, [quantity]);
@@ -62,7 +74,11 @@ const QuantityButton = ({ quantity, cartId, productId, onChangeQuantity }: Quant
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={handleDecrease} disabled={quantityButton <= 0}>
-        <MaterialCommunityIcons name="minus" size={20} color={quantityButton <= 0 ? '#ccc' : 'black'} />
+        <MaterialCommunityIcons
+          name="minus"
+          size={20}
+          color={quantityButton <= 0 ? "#ccc" : "black"}
+        />
       </TouchableOpacity>
 
       <Text style={styles.textQuantity}>{quantityButton}</Text>
@@ -78,19 +94,19 @@ const styles = StyleSheet.create({
   container: {
     marginTop: 10,
     marginLeft: 5,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-around",
     borderWidth: 1,
-    borderColor: '#6c757d',
+    borderColor: "#6c757d",
     borderRadius: 8,
     width: 100,
     height: 35,
-    backgroundColor: 'white',
+    backgroundColor: "white",
   },
   textQuantity: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
   },
 });
 

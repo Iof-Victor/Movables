@@ -20,7 +20,7 @@ interface ProductCardProps {
   cartId?: string;
   showAddToCart: boolean;
   productColor?: string;
-  product?: any; // Adjust the type as per your product structure
+  product?: any;
 }
 
 const ProductCard = ({

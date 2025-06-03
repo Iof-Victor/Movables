@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, FlatList, StyleSheet, Text } from 'react-native';
-import OrderCard from '../Cards/OrderCard';
+import React from "react";
+import { View, FlatList, StyleSheet, Text } from "react-native";
+import OrderCard from "../Cards/OrderCard";
 
 interface Order {
   firstName: string;
@@ -34,7 +34,9 @@ const OrdersGrid = ({ orders }: OrdersGridProps) => {
       keyExtractor={(_, index) => `order-${index}`}
       keyboardShouldPersistTaps="handled"
       style={styles.containerFlatList}
-      contentContainerStyle={orders.length === 0 ? styles.emptyContent : styles.listContent}
+      contentContainerStyle={
+        orders.length === 0 ? styles.emptyContent : styles.listContent
+      }
       ListEmptyComponent={
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyText}>No orders found.</Text>
@@ -47,7 +49,7 @@ const OrdersGrid = ({ orders }: OrdersGridProps) => {
 const styles = StyleSheet.create({
   containerFlatList: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: "white",
   },
   listContent: {
     paddingHorizontal: 10,
@@ -55,29 +57,27 @@ const styles = StyleSheet.create({
   },
   emptyContent: {
     flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     paddingHorizontal: 10,
   },
   cardShadow: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 10,
     marginVertical: 8,
     padding: 10,
-    // iOS shadow
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    // Android shadow
     elevation: 3,
   },
   emptyContainer: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   emptyText: {
     fontSize: 16,
-    color: 'gray',
+    color: "gray",
   },
 });
 
